@@ -2,32 +2,54 @@ package segmentedfilesystem;
 
 import java.io.*;
 import java.net.*;
+import java.util.Arrays;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
 
-        if (args.length != 1) {
-            System.out.println("Usage: java QuoteClient <hostname>");
-            return;
+    // set up the server site and the port #
+    private static final String serverURL= "heartofgold.morris.umn.edu";
+    private static final int port = 6014;
+
+
+    // the main method
+    public static void main(String[] args) throws IOException {
+        Main segmentClient = new Main();
+        segmentClient.start();
+    }
+
+    private static boolean isComplete(DatagramPacket packet) {
+        if (packet.getData() == null) {
+            System.out.println("You're done!");
+            return true;
         }
+        return false;
+    }
+
+    // start the client
+    public static void start() throws IOException {
 
         // get a datagram socket
         DatagramSocket socket = new DatagramSocket();
 
         // send request
-        byte[] buf = new byte[256];
-        InetAddress address = InetAddress.getByName(args[0]);
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 4445);
+        byte[] buf = new byte[128];
+        InetAddress address = InetAddress.getByName(serverURL);
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
         socket.send(packet);
 
         // get response
         packet = new DatagramPacket(buf, buf.length);
-        socket.receive(packet);
 
         // display response
-        String received = new String(packet.getData(), 0, packet.getLength());
-        System.out.println("Quote of the Moment: " + received);
+        while (!isComplete(packet)) {
+            socket.receive(packet);
+            byte[] bytes = packet.getData();
+            System.out.println(Arrays.toString(bytes));
+        }
+
+
 
         socket.close();
     }
+
 }
