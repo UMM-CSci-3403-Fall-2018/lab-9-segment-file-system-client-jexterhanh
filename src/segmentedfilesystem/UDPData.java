@@ -1,26 +1,36 @@
 package segmentedfilesystem;
 
 public class UDPData {
-    private byte[] dataPacket = new byte[128];
 
-    UDPData(byte[] packet) {
-        this.dataPacket = packet;
-    }
+    private byte status;
+    private byte fileID;
+    private byte[] packetNumber = new byte[2];
+    private byte[] packetData = new byte[124];
 
-    public void updatePacket(byte[] response) {
-        this.dataPacket = response;
+    public UDPData(byte[] packet) {
+        this.status = packet[0];
+        this.fileID = packet[1];
+        for (int i = 2; i < 4; i++) {
+            packetNumber[i - 2] = packet[i];
+        }
+        for (int i = 4; i < packet.length; i++) {
+            packetData[i - 4] = packet[i];
+        }
     }
 
     public byte getStatus() {
-        return dataPacket[0];
+        return this.status;
     }
 
     public byte getID() {
-        return dataPacket[1];
+        return this.fileID;
     }
 
-    public byte getPNumber() {
-        return dataPacket[3];
+    public byte[] getPacketNumber() {
+        return packetNumber;
+    }
+    public byte[] getPacketData() {
+        return packetData;
     }
 
 }

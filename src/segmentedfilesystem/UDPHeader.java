@@ -1,25 +1,28 @@
 package segmentedfilesystem;
 
 public class UDPHeader {
-    private byte[] headerPacket = new byte[128];
 
-    UDPHeader(byte[] packet) {
-        this.headerPacket = packet;
-    }
+    private byte status;
+    private byte fileID;
+    private byte[] filename = new byte[124];
 
-    public void updatePacket(byte[] response) {
-        this.headerPacket = response;
+    public UDPHeader(byte[] packet) {
+        this.status = packet[0];
+        this.fileID = packet[1];
+        for (int i = 2; i < packet.length; i++) {
+            filename[i - 2] = packet[i];
+        }
     }
 
     public byte getStatus() {
-        return headerPacket[0];
+        return this.status;
     }
 
     public byte getID() {
-        return headerPacket[1];
+        return this.fileID;
     }
 
-    public byte getPNumber() {
-        return headerPacket[3];
+    public byte[] getFilename() {
+        return filename;
     }
 }
