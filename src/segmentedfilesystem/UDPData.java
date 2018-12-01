@@ -6,6 +6,7 @@ public class UDPData {
     private byte fileID;
     private byte[] packetNumber = new byte[2];
     private byte[] packetData = new byte[124];
+    public int dataLength = 0;
 
     public UDPData(byte[] packet) {
         this.status = packet[0];
@@ -15,6 +16,7 @@ public class UDPData {
         }
         for (int i = 4; i < packet.length; i++) {
             packetData[i - 4] = packet[i];
+            dataLength += 1;
         }
     }
 
