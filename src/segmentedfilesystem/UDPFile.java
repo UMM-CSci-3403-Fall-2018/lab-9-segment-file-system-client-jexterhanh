@@ -1,8 +1,10 @@
 package segmentedfilesystem;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class UDPFile {
     private byte fileID = 0;
@@ -10,8 +12,9 @@ public class UDPFile {
     private ArrayList<Byte> data = new ArrayList<>();
     private boolean complete = false;
     private int length = 0;
-    public int amount = 1;
+    public int amount = 0;
     public int expectAmount = Integer.MAX_VALUE;
+    private boolean hasHeader = false;
 
     public UDPFile() {
         // create a UDPFile object
@@ -20,6 +23,8 @@ public class UDPFile {
     public void mkUDPFile(UDPHeader header) {
         this.fileID = header.getID();
         this.filename = header.getFilename();
+        this.hasHeader = true;
+        checkComplete();
     }
 
     public void mkUDPFile(UDPData data) {
@@ -28,25 +33,24 @@ public class UDPFile {
             for (int i = 0; i < data.dataLength; i++) {
                 this.data.add(data.getPacketData()[i]);
                 this.length++;
-                }
-            if (data.getPacketNumber()[1] < 0) {
-                this.expectAmount = 256 * data.getPacketNumber()[0] + 256 + data.getPacketNumber()[1];
-                System.out.println(this.expectAmount);
-            } else {
-                this.expectAmount = 256 * data.getPacketNumber()[0] + data.getPacketNumber()[1];
-                System.out.println(this.expectAmount);
             }
-            //this.complete = true;
+            this.expectAmount = data.getPacketNumber();
         } else if (data.getStatus() == 1){
             for (int i = 0; i < data.dataLength; i++) {
                 this.data.add(data.getPacketData()[i]);
                 this.length++;
-                this.amount++;
-                if (this.amount == this.expectAmount) {
-                    this.complete = true;
-                    System.out.println("this one is completed!");
-                }
+
             }
+            this.amount++;
+        }
+        checkComplete();
+    }
+
+    public void checkComplete() {
+        if (this.hasHeader == true && this.amount == this.expectAmount) {
+            this.complete = true;
+            Collections.sort(this.data);
+            System.out.println("this one is completed!");
         }
     }
 
@@ -60,6 +64,8 @@ public class UDPFile {
 
     public void addHeader(UDPHeader header) {
         this.filename = header.getFilename();
+        this.hasHeader = true;
+        checkComplete();
     }
 
     public void addData(UDPData data) {
@@ -67,31 +73,18 @@ public class UDPFile {
             for (int i = 0; i < data.dataLength; i++) {
                 this.data.add(data.getPacketData()[i]);
                 this.length++;
-
             }
-            if (data.getPacketNumber()[1] < 0) {
-
-                this.expectAmount = 256 * data.getPacketNumber()[0] + 256 + data.getPacketNumber()[1];
-                System.out.println(this.expectAmount);
-            } else {
-                System.out.println("I got here");
-                this.expectAmount = 256 * data.getPacketNumber()[0] + data.getPacketNumber()[1];
-                System.out.println(this.expectAmount);
-            }
-            //this.complete = true;
+            this.expectAmount = data.getPacketNumber();
         } else if (data.getStatus() == 1){
             for (int i = 0; i < data.dataLength; i++) {
                 this.data.add(data.getPacketData()[i]);
                 this.length++;
-                this.amount++;
-                if (this.amount == this.expectAmount) {
-                    this.complete = true;
-                    System.out.println("this one is completed!");
-                }
             }
+            this.amount++;
         } else {
             System.out.println("This data packet doesn't have a correct status number therefore I refuse to do anything!");
         }
+        checkComplete();
     }
 
     public byte[] getData() {
@@ -104,8 +97,10 @@ public class UDPFile {
 
 
     public void outputFile() {
+        String path = "../";
         String filename = new String(this.filename);
-        try (FileOutputStream fos = new FileOutputStream("../" + filename)) {
+        File file = new File(path + filename);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(getData());
         } catch (IOException e) {
             System.out.println(e);
