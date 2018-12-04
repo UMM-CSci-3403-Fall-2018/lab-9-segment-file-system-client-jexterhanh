@@ -41,7 +41,6 @@ public class Main {
             files[i] = new UDPFile();
         }
 
-
         // display response
         while (!isComplete()) {
             socket.receive(packet);
@@ -53,8 +52,10 @@ public class Main {
                 for (int i = 0; i < 3; i ++) {
                     if (files[i].getID() == 0) {
                         files[i].mkUDPFile(header);
+                        break;
                     } else if (files[i].getID() == header.getID()) {
                         files[i].addHeader(header);
+                        break;
                     }
                 }
             } else if ((bytes[0] == 3) || (bytes[0] == 1)) {
@@ -62,8 +63,10 @@ public class Main {
                 for (int i = 0; i < 3; i ++) {
                     if (files[i].getID() == 0) {
                         files[i].mkUDPFile(data);
+                        break;
                     } else if (files[i].getID() == data.getID()) {
                         files[i].addData(data);
+                        break;
                     }
                 }
             }
