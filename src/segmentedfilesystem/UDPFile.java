@@ -5,24 +5,55 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class UDPFile {
-    private byte fileID;
-    private byte[] filename = new byte[124];
-    private ArrayList<Byte> data;
+    private byte fileID = 0;
+    private byte[] filename = new byte[126];
+    private ArrayList<Byte> data = new ArrayList<>();
     private boolean complete = false;
     private int length = 0;
-    public int amount = 0;
+    public int amount = 1;
+    public int expectAmount = Integer.MAX_VALUE;
 
     public UDPFile() {
         // create a UDPFile object
+    }
+
+    public void mkUDPFile(UDPHeader header) {
+        this.fileID = header.getID();
+        this.filename = header.getFilename();
+    }
+
+    public void mkUDPFile(UDPData data) {
+        this.fileID = data.getID();
+        if (data.getStatus() == 3) {
+            for (int i = 0; i < data.dataLength; i++) {
+                this.data.add(data.getPacketData()[i]);
+                this.length++;
+                }
+            if (data.getPacketNumber()[1] < 0) {
+                this.expectAmount = 256 * data.getPacketNumber()[0] + 256 + data.getPacketNumber()[1];
+                System.out.println(this.expectAmount);
+            } else {
+                this.expectAmount = 256 * data.getPacketNumber()[0] + data.getPacketNumber()[1];
+                System.out.println(this.expectAmount);
+            }
+            //this.complete = true;
+        } else if (data.getStatus() == 1){
+            for (int i = 0; i < data.dataLength; i++) {
+                this.data.add(data.getPacketData()[i]);
+                this.length++;
+                this.amount++;
+                if (this.amount == this.expectAmount) {
+                    this.complete = true;
+                    System.out.println("this one is completed!");
+                }
+            }
+        }
     }
 
     public boolean isComplete() {
         return complete;
     }
 
-    public void setID(byte id) {
-        this.fileID = id;
-    }
     public byte getID() {
         return fileID;
     }
@@ -35,13 +66,28 @@ public class UDPFile {
         if (data.getStatus() == 3) {
             for (int i = 0; i < data.dataLength; i++) {
                 this.data.add(data.getPacketData()[i]);
-                this.length += 1;
+                this.length++;
+
             }
-            this.complete = true;
+            if (data.getPacketNumber()[1] < 0) {
+
+                this.expectAmount = 256 * data.getPacketNumber()[0] + 256 + data.getPacketNumber()[1];
+                System.out.println(this.expectAmount);
+            } else {
+                System.out.println("I got here");
+                this.expectAmount = 256 * data.getPacketNumber()[0] + data.getPacketNumber()[1];
+                System.out.println(this.expectAmount);
+            }
+            //this.complete = true;
         } else if (data.getStatus() == 1){
             for (int i = 0; i < data.dataLength; i++) {
                 this.data.add(data.getPacketData()[i]);
-                this.length += 1;
+                this.length++;
+                this.amount++;
+                if (this.amount == this.expectAmount) {
+                    this.complete = true;
+                    System.out.println("this one is completed!");
+                }
             }
         } else {
             System.out.println("This data packet doesn't have a correct status number therefore I refuse to do anything!");

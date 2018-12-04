@@ -41,31 +41,34 @@ public class Main {
             files[i] = new UDPFile();
         }
 
-        /**  Need to figure out how to actually distribute the packets
-         *
-         *
 
         // display response
         while (!isComplete()) {
-            int position = 0;
             socket.receive(packet);
             byte[] bytes = packet.getData();
             System.out.println(Arrays.toString(bytes));
+
             if (bytes[0] == 0) {
                 UDPHeader header = new UDPHeader(bytes);
-                while (files[position].getID() != header.getID() && files[position].getID() != 0) {
-                    position += 1;
+                for (int i = 0; i < 3; i ++) {
+                    if (files[i].getID() == 0) {
+                        files[i].mkUDPFile(header);
+                    } else if (files[i].getID() == header.getID()) {
+                        files[i].addHeader(header);
+                    }
                 }
-                files[position].addHeader(header);
-            } else if (bytes[0] == 3) {
+            } else if ((bytes[0] == 3) || (bytes[0] == 1)) {
                 UDPData data = new UDPData(bytes);
-                // set amount of packets
-
-
-
+                for (int i = 0; i < 3; i ++) {
+                    if (files[i].getID() == 0) {
+                        files[i].mkUDPFile(data);
+                    } else if (files[i].getID() == data.getID()) {
+                        files[i].addData(data);
+                    }
+                }
             }
 
-        }*/
+        }
 
 
 
@@ -73,11 +76,6 @@ public class Main {
     }
 
     public static boolean isComplete() {
-        for (int i = 0; i < 3; i++) {
-            if (files[i] == null) {
-                return false;
-            }
-        }
         return (files[0].isComplete() && files[1].isComplete() && files[2].isComplete());
     }
 

@@ -4,7 +4,7 @@ public class UDPHeader {
 
     private byte status;
     private byte fileID;
-    private byte[] filename = new byte[124];
+    private byte[] filename = new byte[126];
 
     public UDPHeader(byte[] packet) {
         this.status = packet[0];
