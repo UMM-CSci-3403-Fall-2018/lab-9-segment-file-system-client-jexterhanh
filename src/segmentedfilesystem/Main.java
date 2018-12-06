@@ -2,7 +2,6 @@ package segmentedfilesystem;
 
 import java.io.*;
 import java.net.*;
-import java.util.Arrays;
 
 public class Main {
 
@@ -29,7 +28,7 @@ public class Main {
         DatagramSocket socket = new DatagramSocket();
 
         // send request
-        byte[] buf = new byte[128];
+        byte[] buf = new byte[1028];
         InetAddress address = InetAddress.getByName(serverURL);
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
         socket.send(packet);
@@ -44,11 +43,14 @@ public class Main {
         // display response
         while (!isComplete()) {
             socket.receive(packet);
+            // get data and length of the packet
             byte[] bytes = packet.getData();
-            System.out.println(Arrays.toString(bytes));
+            int theLength = packet.getLength();
+            //System.out.println(Arrays.toString(bytes));
 
+            // recognize the header and data packet
             if (bytes[0] == 0) {
-                UDPHeader header = new UDPHeader(bytes);
+                UDPHeader header = new UDPHeader(bytes, theLength);
                 for (int i = 0; i < 3; i ++) {
                     if (files[i].getID() == 0) {
                         files[i].mkUDPFile(header);
@@ -59,7 +61,7 @@ public class Main {
                     }
                 }
             } else if ((bytes[0] == 3) || (bytes[0] == 1)) {
-                UDPData data = new UDPData(bytes);
+                UDPData data = new UDPData(bytes, theLength);
                 for (int i = 0; i < 3; i ++) {
                     if (files[i].getID() == 0) {
                         files[i].mkUDPFile(data);
@@ -78,6 +80,7 @@ public class Main {
         socket.close();
     }
 
+    // check if all files in the array are completed
     public static boolean isComplete() {
         return (files[0].isComplete() && files[1].isComplete() && files[2].isComplete());
     }
