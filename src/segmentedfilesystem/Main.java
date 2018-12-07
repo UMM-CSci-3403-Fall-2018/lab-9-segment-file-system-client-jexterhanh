@@ -36,6 +36,7 @@ public class Main {
         // get response
         packet = new DatagramPacket(buf, buf.length);
 
+        // initialize 3 empty UDPFiles in the array
         for (int i = 0; i < files.length; i++) {
             files[i] = new UDPFile();
         }
@@ -52,7 +53,7 @@ public class Main {
             if (bytes[0] == 0) {
                 UDPHeader header = new UDPHeader(bytes, theLength);
                 for (int i = 0; i < 3; i ++) {
-                    if (files[i].getID() == 0) {
+                    if (files[i].isAssigned() == false) {
                         files[i].mkUDPFile(header);
                         break;
                     } else if (files[i].getID() == header.getID()) {
@@ -63,7 +64,7 @@ public class Main {
             } else if ((bytes[0] == 3) || (bytes[0] == 1)) {
                 UDPData data = new UDPData(bytes, theLength);
                 for (int i = 0; i < 3; i ++) {
-                    if (files[i].getID() == 0) {
+                    if (files[i].isAssigned() == false) {
                         files[i].mkUDPFile(data);
                         break;
                     } else if (files[i].getID() == data.getID()) {

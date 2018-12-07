@@ -15,6 +15,7 @@ public class UDPFile {
     public int amount = 0;
     public int expectAmount = Integer.MAX_VALUE;
     private boolean hasHeader = false;
+    private boolean isAssigned = false;
 
     public UDPFile() {
         // create a UDPFile object
@@ -25,12 +26,14 @@ public class UDPFile {
         this.fileID = header.getID();
         this.filename = header.getFilename();
         this.hasHeader = true;
-        checkComplete();
+        this.isAssigned = true;
+        //checkComplete();
     }
 
     // set file ID when there wasn't a UDPFile
     public void mkUDPFile(UDPData data) {
         this.fileID = data.getID();
+        this.isAssigned = true;
         if (data.getStatus() == 3) {
             this.datas.add(data);
             this.length += data.dataLength;
@@ -41,7 +44,7 @@ public class UDPFile {
             this.length += data.dataLength;
             this.amount++;
         }
-        checkComplete();
+        //checkComplete();
     }
 
     public void checkComplete() {
@@ -56,6 +59,9 @@ public class UDPFile {
     public boolean isComplete() {
         return complete;
     }
+
+    // check if this is a empty UDPFile
+    public boolean isAssigned() {return isAssigned;}
 
     public byte getID() {
         return fileID;
